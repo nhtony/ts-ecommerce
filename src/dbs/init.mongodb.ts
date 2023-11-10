@@ -1,7 +1,9 @@
 import mongoose from 'mongoose'
 import { countConnect } from '../helpers/check.connect'
+import { appConfig } from '../configs/config.mongdb'
 
-const connectString = `mongodb://localhost:27017/shopDEV`
+const { host, port, name } = appConfig.db
+const connectString = `mongodb://${host}:${port}/${name}`
 
 class Database {
   static instance: Database
@@ -18,7 +20,9 @@ class Database {
     }
 
     mongoose
-      .connect(connectString)
+      .connect(connectString, {
+        maxPoolSize: 50
+      })
       .then((_) => {
         countConnect()
         console.log(`Connected Mongodb Successfully`)
