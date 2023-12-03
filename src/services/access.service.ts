@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { shopModel } from '~/models/shop.model'
 import { KeyTokenService } from './keyToken.service'
 import { createTokensPair } from '~/auth/authUltis'
+import { BadRequestError } from '~/core/error.response'
 
 enum RoleShop {
   SHOP = 'SHOP',
@@ -20,67 +21,53 @@ type SignUpParams = {
 
 class AccessService {
   static signUp = async ({ name, email, password, roles }: SignUpParams) => {
-    try {
-      const holderShop = await shopModel.findOne({ email }).lean()
-      if (holderShop) {
-        return {
-          code: 'xxxx',
-          message: 'Shop already registered!'
-        }
-      }
+    const holderShop = await shopModel.findOne({ email }).lean()
+    if (holderShop) {
+      throw new BadRequestError('Error: Shop already registered!')
+    }
 
-      const passwordHash = await bcrypt.hash(password, 10)
+    const passwordHash = await bcrypt.hash(password, 10)
 
-      const newShop = await shopModel.create({
-        name,
-        email,
-        password: passwordHash,
-        roles: [RoleShop.SHOP]
+    const newShop = await shopModel.create({
+      name,
+      email,
+      password: passwordHash,
+      roles: [RoleShop.SHOP]
+    })
+
+    if (newShop) {
+      // created privateKey, publicKey
+      console.log('newShop', newShop)
+
+      const privateKey = crypto.randomBytes(64).toString('hex')
+      const publicKey = crypto.randomBytes(64).toString('hex')
+
+      const keyStore = await KeyTokenService.createKeyToken({
+        userId: newShop._id,
+        publicKey,
+        privateKey
       })
 
-      if (newShop) {
-        // created privateKey, publicKey
-        console.log('newShop', newShop)
+      // console.log(keyStore)
 
-        const privateKey = crypto.randomBytes(64).toString('hex')
-        const publicKey = crypto.randomBytes(64).toString('hex')
-
-        const keyStore = await KeyTokenService.createKeyToken({
-          userId: newShop._id,
-          publicKey,
-          privateKey
-        })
-
-        // console.log(keyStore)
-
-        if (!keyStore) {
-          return {
-            code: 'xxxx',
-            message: 'keyStore error'
-          }
-        }
-
-        const tokens = await createTokensPair({ userId: newShop._id, email }, publicKey, privateKey)
-
-        return {
-          code: 201,
-          metadata: {
-            shop: newShop,
-            tokens
-          }
-        }
+      if (!keyStore) {
+        throw new BadRequestError('Error: keyStore erorr!')
       }
+
+      const tokens = await createTokensPair({ userId: newShop._id, email }, publicKey, privateKey)
 
       return {
-        code: 20,
-        metadata: null
+        code: 201,
+        metadata: {
+          shop: newShop,
+          tokens
+        }
       }
-    } catch (error: any) {
-      return {
-        code: 'xxx',
-        message: error.message,
-        status: 'error'
-      }
+    }
+
+    return {
+      code: 20,
+      metadata: null
     }
   }
 }

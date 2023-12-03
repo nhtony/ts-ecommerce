@@ -49,4 +49,10 @@ const permission: any = (permission: string) => {
   }
 }
 
-export { apiKey, permission }
+const asyncHandler = (fn: any) => {
+  return (req: ApiKeyRequest, res: Response, next: NextFunction) => {
+    fn(req, res, next).catch(next)
+  }
+}
+
+export { apiKey, permission, asyncHandler }
