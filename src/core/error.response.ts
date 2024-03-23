@@ -1,12 +1,5 @@
-const StatusCode = {
-  FORBIDDEN: 403,
-  CONFLICT: 409
-}
-
-const ReasonStatusCode = {
-  FORBIDDEN: 'Bad request error',
-  CONFLICT: 'Conflict error'
-}
+import { ReasonPhrase } from '~/utils/reasonPhrase'
+import { StatusCode } from '~/utils/statusCode'
 
 class ErrorResponse extends Error {
   status: number
@@ -17,15 +10,21 @@ class ErrorResponse extends Error {
 }
 
 class ConflictRequestError extends ErrorResponse {
-  constructor(message = ReasonStatusCode.CONFLICT, statusCode = StatusCode.CONFLICT) {
+  constructor(message = ReasonPhrase.CONFLICT, statusCode = StatusCode.CONFLICT) {
     super(message, statusCode)
   }
 }
 
 class BadRequestError extends ErrorResponse {
-  constructor(message = ReasonStatusCode.FORBIDDEN, statusCode = StatusCode.FORBIDDEN) {
+  constructor(message = ReasonPhrase.FORBIDDEN, statusCode = StatusCode.FORBIDDEN) {
     super(message, statusCode)
   }
 }
 
-export { ConflictRequestError, BadRequestError }
+class AuthFailureError extends ErrorResponse {
+  constructor(message = ReasonPhrase.UNAUTHORIZED, statusCode = StatusCode.UNAUTHORIZED) {
+    super(message, statusCode)
+  }
+}
+
+export { ConflictRequestError, BadRequestError, AuthFailureError }
