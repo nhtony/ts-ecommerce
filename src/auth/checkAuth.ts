@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction, RequestHandler } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import { findById } from '~/services/apiKey.service'
 
 const HEADER = {
@@ -49,10 +49,4 @@ const permission: any = (permission: string) => {
   }
 }
 
-const asyncHandler = (fn: any) => {
-  return (req: ApiKeyRequest, res: Response, next: NextFunction) => {
-    fn(req, res, next).catch(next)
-  }
-}
-
-export { apiKey, permission, asyncHandler }
+export { apiKey, permission }

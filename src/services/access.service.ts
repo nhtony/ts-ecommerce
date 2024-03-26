@@ -102,6 +102,11 @@ class AccessService {
       metadata: null
     }
   }
+
+  static logout = async (keyStore: any) => {
+    const delKey = await KeyTokenService.removeTokenById(keyStore._id)
+    return delKey
+  }
 }
 
 export { AccessService }

@@ -20,7 +20,7 @@ class KeyTokenService {
       //   privateKey
       // })
 
-      const filter = { user: userId }
+      const filter = { shop: userId }
       const update = {
         publicKey,
         privateKey,
@@ -34,6 +34,17 @@ class KeyTokenService {
     } catch (error) {
       return error
     }
+  }
+
+  static findByUserId = async (userId: any) => {
+    return await keyTokenModel.findOne({ shop: new Types.ObjectId(userId) }).lean()
+  }
+
+  static removeTokenById = async ({ id }: Types.ObjectId) => {
+    const result = await keyTokenModel.deleteOne({
+      _id: new Types.ObjectId(id)
+    })
+    return result
   }
 }
 
